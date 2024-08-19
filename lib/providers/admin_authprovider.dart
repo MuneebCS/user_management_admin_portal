@@ -167,10 +167,6 @@ class AuthenticationProvider extends ChangeNotifier {
       if (user != null && user.uid == uid) {
         await user.delete();
       } else {
-        // If the user is not currently authenticated, you might need admin credentials or special handling
-        await _auth.signInWithCredential(EmailAuthProvider.credential(
-            email: 'admin@example.com',
-            password: 'adminPassword')); // Example admin credentials
         await _auth.currentUser!.delete();
       }
     } catch (e) {
