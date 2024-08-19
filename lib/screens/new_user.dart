@@ -65,7 +65,6 @@ class _NewUserState extends State<NewUser> {
       ),
     );
 
-    // Reset the form and profile image if creation is successful
     if (authProvider.errorMessage.isEmpty) {
       setState(() {
         _profileImageBytes = null;

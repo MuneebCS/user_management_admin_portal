@@ -21,6 +21,7 @@ class User {
       profileImageUrl: doc['profileImageUrl'],
     );
   }
+
   Map<String, dynamic> toMap() {
     return {
       'email': email,

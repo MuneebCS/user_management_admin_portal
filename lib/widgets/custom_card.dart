@@ -18,31 +18,16 @@ class CustomCard extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         child: Row(
           children: [
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Theme.of(context).secondaryHeaderColor,
-                  child: user.profileImageUrl.isNotEmpty
-                      ? null
-                      : Icon(Icons.person,
-                          size: 30, color: Theme.of(context).primaryColor),
-                ),
-                if (user.profileImageUrl.isNotEmpty)
-                  Positioned.fill(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Theme.of(context).secondaryHeaderColor,
-                  backgroundImage: user.profileImageUrl.isNotEmpty
-                      ? NetworkImage(user.profileImageUrl)
-                      : null,
-                ),
-              ],
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Theme.of(context).secondaryHeaderColor,
+              backgroundImage: user.profileImageUrl.isNotEmpty
+                  ? NetworkImage(user.profileImageUrl)
+                  : null,
+              child: user.profileImageUrl.isEmpty
+                  ? Icon(Icons.person,
+                      size: 30, color: Theme.of(context).primaryColor)
+                  : null,
             ),
             const SizedBox(width: 15),
             Expanded(

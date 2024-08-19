@@ -28,7 +28,7 @@ class UsersListScreen extends StatelessWidget {
 
               List<User> users = snapshot.data!.map((data) {
                 return User(
-                  uid: data['uid'] ?? 'unknown',
+                  uid: data['uid'] as String? ?? 'No UID',
                   email: data['email'] as String? ?? 'No Email',
                   fullName: data['fullName'] as String? ?? 'No Name',
                   profileImageUrl: data['profileImageUrl'] as String? ?? '',

@@ -1,7 +1,9 @@
-import 'dart:typed_data'; // Ensure this import is present
+// }
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:user_management_admin_portal/screens/new_user.dart';
 import '../models/user.dart';
 import '../providers/admin_authprovider.dart';
 import '../widgets/custm_button.dart';
@@ -27,6 +29,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     super.initState();
     _emailController = TextEditingController(text: widget.user.email);
     _fullNameController = TextEditingController(text: widget.user.fullName);
+    print('User UID in initState: ${widget.user.uid}');
   }
 
   @override
@@ -56,84 +59,95 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
 
-    await authProvider.editUser(
-      widget.user.uid,
-      userId: widget.user.uid,
-      email: _emailController.text.trim(),
-      fullName: _fullNameController.text.trim(),
-      profileImageBytes: _profileImageBytes,
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (authProvider.errorMessage.isEmpty) {
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authProvider.errorMessage)),
+    try {
+      await authProvider.editUser(
+        widget.user.uid,
+        email: _emailController.text.trim(),
+        fullName: _fullNameController.text.trim(),
+        profileImageBytes: _profileImageBytes,
       );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User details updated successfully')),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => NewUser()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save changes: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> _deleteUser() async {
-    setState(() {
-      _isLoading = true;
-    });
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Deletion'),
+        content: Text(
+            'Are you sure you want to delete this user? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          TextButton(
+            child: Text('Delete'),
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
 
-    final authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
+    if (confirm == true) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    await authProvider.deleteUser(widget.user.uid);
+      final authProvider =
+          Provider.of<AuthenticationProvider>(context, listen: false);
 
-    setState(() {
-      _isLoading = false;
-    });
+      try {
+        await authProvider.deleteUser(widget.user.uid);
 
-    if (authProvider.errorMessage.isEmpty) {
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authProvider.errorMessage)),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User deleted successfully')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NewUser()),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete user: ${e.toString()}')),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
+        backgroundColor: Theme.of(context).primaryColor,
         title: Text('Edit User Details'),
         actions: [
           IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: _isLoading
-                ? null
-                : () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Confirm'),
-                        content:
-                            Text('Are you sure you want to delete this user?'),
-                        actions: [
-                          TextButton(
-                            child: Text('Cancel'),
-                            onPressed: () => Navigator.of(context).pop(false),
-                          ),
-                          TextButton(
-                            child: Text('Delete'),
-                            onPressed: () => Navigator.of(context).pop(true),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirm == true) {
-                      await _deleteUser();
-                    }
-                  },
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: _isLoading ? null : _deleteUser,
           ),
         ],
       ),
@@ -145,10 +159,13 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 50,
+                backgroundColor: Theme.of(context).secondaryHeaderColor,
                 backgroundImage: _profileImageBytes != null
                     ? MemoryImage(_profileImageBytes!)
-                    : NetworkImage(widget.user.profileImageUrl)
-                        as ImageProvider,
+                    : (widget.user.profileImageUrl.isNotEmpty
+                        ? NetworkImage(widget.user.profileImageUrl)
+                        : AssetImage('assets/default_profile_image.png')
+                            as ImageProvider),
                 child: Align(
                   alignment: Alignment.bottomRight,
                   child: Icon(
@@ -180,7 +197,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                       await _saveChanges();
                     },
               isLoading: _isLoading,
-            ),
+            )
           ],
         ),
       ),

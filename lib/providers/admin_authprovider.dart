@@ -103,9 +103,11 @@ class AuthenticationProvider extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> viewAllUsers() async {
     try {
       QuerySnapshot snapshot = await _firestore.collection('users').get();
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      return snapshot.docs.map((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        data['uid'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
       _errorMessage = 'Failed to fetch users. Please try again.';
       notifyListeners();
@@ -115,64 +117,40 @@ class AuthenticationProvider extends ChangeNotifier {
 
   Future<void> editUser(
     String uid, {
-    String? email,
-    String? fullName,
+    required String email,
+    required String fullName,
     Uint8List? profileImageBytes,
-    required String userId,
   }) async {
-    _errorMessage = '';
-    notifyListeners();
-
     try {
-      Map<String, dynamic> updateData = {};
+      final userRef = _firestore.collection('users').doc(uid);
 
-      if (email != null) {
-        updateData['email'] = email;
-        // Update the email in FirebaseAuth as well
-        User? currentUser = _auth.currentUser;
-        if (currentUser != null && currentUser.uid == uid) {
-          await currentUser.updateEmail(email);
-        }
-      }
-      if (fullName != null) {
-        updateData['fullName'] = fullName;
-      }
+      // If a new profile image is provided, upload it and get the URL
+      String? imageUrl;
       if (profileImageBytes != null) {
         String filePath = 'profile_images/$uid.jpg';
         final uploadTask = _storage.ref(filePath).putData(profileImageBytes);
-        String imageUrl = await (await uploadTask).ref.getDownloadURL();
-        updateData['profileImageUrl'] = imageUrl;
+        imageUrl = await (await uploadTask).ref.getDownloadURL();
       }
 
-      if (updateData.isNotEmpty) {
-        await _firestore.collection('users').doc(uid).update(updateData);
-      }
+      final userData = {
+        'email': email,
+        'fullName': fullName,
+        'profileImageUrl':
+            imageUrl, // This will be null if no new image was uploaded
+      };
+
+      await userRef.update(userData);
     } catch (e) {
-      _errorMessage = 'Failed to update user. Please try again.';
-    } finally {
-      notifyListeners();
+      throw Exception('Failed to update user');
     }
   }
 
   Future<void> deleteUser(String uid) async {
-    _errorMessage = '';
-    notifyListeners();
-
     try {
-      // Delete user from Firestore
-      await _firestore.collection('users').doc(uid).delete();
-
-      // Delete user from FirebaseAuth
-      User? user = _auth.currentUser;
-      if (user != null && user.uid == uid) {
-        await user.delete();
-      } else {
-        await _auth.currentUser!.delete();
-      }
+      final userRef = _firestore.collection('users').doc(uid);
+      await userRef.delete();
     } catch (e) {
-      _errorMessage = 'Failed to delete user. Please try again.';
-    } finally {
-      notifyListeners();
+      throw Exception('Failed to delete user');
     }
   }
 
@@ -204,6 +182,7 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
+  @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
