@@ -77,27 +77,11 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  CustomButton(
-                      text: authProvider.isLoading ? "Logging in..." : "Login",
-                      onPressed: () async {
-                        authProvider.isLoading
-                            ? null
-                            : success = await authProvider.loginAdmin();
-
-                        if (success) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomePage()),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(authProvider.errorMessage),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }),
+                  authProvider.isLoading
+                      ? CircularProgressIndicator(
+                          color: Theme.of(context).secondaryHeaderColor,
+                        )
+                      : _loginButton(authProvider, context)
                 ],
               ),
             ),
@@ -105,5 +89,30 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }
+
+  CustomButton _loginButton(
+      AuthenticationProvider authProvider, BuildContext context) {
+    return CustomButton(
+        text: "Login",
+        onPressed: () async {
+          authProvider.isLoading
+              ? null
+              : success = await authProvider.loginAdmin();
+
+          if (success) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(authProvider.errorMessage),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        });
   }
 }
