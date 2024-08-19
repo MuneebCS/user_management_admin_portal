@@ -66,6 +66,7 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: PageView(
+              physics: const NeverScrollableScrollPhysics(),
               controller: _pageController,
               children: [
                 NewUser(),
@@ -75,15 +76,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLogoutPage() {
-    return const Center(
-      child: Text(
-        'Logout Page',
-        style: const TextStyle(fontSize: 24),
       ),
     );
   }

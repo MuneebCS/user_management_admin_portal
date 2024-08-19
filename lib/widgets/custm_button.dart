@@ -34,7 +34,7 @@ class _CustomButtonState extends State<CustomButton> {
           color: widget.isLoading
               ? Colors.grey
               : _isHovered
-                  ? Theme.of(context).primaryColor
+                  ? Colors.grey
                   : Theme.of(context).secondaryHeaderColor,
           borderRadius: BorderRadius.circular(8.0),
           boxShadow: [
@@ -63,7 +63,7 @@ class _CustomButtonState extends State<CustomButton> {
                     fontWeight: FontWeight.bold,
                     color: _isHovered
                         ? Theme.of(context).secondaryHeaderColor
-                        : Theme.of(context).primaryColor,
+                        : Colors.grey,
                     fontFamily: 'Roboto',
                   ),
                 ),
