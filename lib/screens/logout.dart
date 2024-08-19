@@ -17,11 +17,10 @@ class LogoutPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Container(
-            width: 360, // Adjust width for consistency with login page
+            width: 360,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(
-                  12.0), // Card style with rounded corners
+              borderRadius: BorderRadius.circular(12.0),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -32,7 +31,7 @@ class LogoutPage extends StatelessWidget {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(24.0), // Consistent padding
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -68,32 +67,14 @@ class LogoutPage extends StatelessWidget {
                           );
                         },
                       ),
-                      ElevatedButton(
+                      CustomButton(
+                        text: "Cancel",
                         onPressed: () {
-                          SnackBar(content: Text("You are logged out!"));
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => HomePage()),
                           );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[400],
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          "Cancel",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                       ),
                     ],
                   ),
